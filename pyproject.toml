@@ -1,6 +1,7 @@
 [project]
 name = "hopsworks-apigen"
 version = "1.0.0"
+requires-python = ">=3.9"
 
 [project.optional-dependencies]
 build = ["griffe"]
