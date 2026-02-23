@@ -20,12 +20,20 @@ import contextlib
 import shutil
 from collections import defaultdict
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import griffe
 from setuptools import Command, Distribution
 
 from hopsworks_apigen import HopsworksApigenError
-from hopsworks_apigen.griffe import HopsworksApigenGriffe
+
+
+try:
+    import griffe
+
+    from hopsworks_apigen.griffe import HopsworksApigenGriffe
+except ImportError as e:
+    if TYPE_CHECKING:
+        raise e
 
 
 def _discover_python_modules(root):
