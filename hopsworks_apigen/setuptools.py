@@ -31,7 +31,10 @@ try:
     import griffe
 
     from hopsworks_apigen.griffe import HopsworksApigenGriffe
+
+    is_griffe_installed = True
 except ImportError as e:
+    is_griffe_installed = False
     if TYPE_CHECKING:
         raise e
 
@@ -300,6 +303,8 @@ class install_aliases(Command):
 
 
 def finalize_distribution_options(dist: Distribution) -> None:
+    if not is_griffe_installed:
+        return
     dist.get_command_class("build").sub_commands.append(
         (build_aliases.__name__, None),
     )
