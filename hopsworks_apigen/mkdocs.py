@@ -223,6 +223,7 @@ class _NavNode:
         """Convert tree to mkdocs nav list format."""
         result = []
         for name, child in sorted(self.children.items()):
+            name = name.replace("_", "\u200b_")
             if child.doc_path and not child.children:
                 result.append({f"{MOD_SYMBOL} {name}": child.doc_path})
             elif child.children:
