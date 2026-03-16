@@ -16,7 +16,6 @@
 
 """Scripts for automatic management of aliases."""
 
-import contextlib
 import shutil
 from collections import defaultdict
 from pathlib import Path
@@ -181,7 +180,6 @@ def collect_managed(root):
 
 def generate_aliases(source_root, destination_root):
     managed = collect_managed(source_root)
-    gitignore_entries = []
 
     for filepath, content in managed.items():
         filepath: Path
@@ -195,23 +193,31 @@ def generate_aliases(source_root, destination_root):
             parent = parent.parent
 
         for d in reversed(to_be_created):
-            with contextlib.suppress(ValueError):
-                rel_path = d.relative_to(destination_root)
-                gitignore_entries.append(f"/{rel_path}")
             d.mkdir()
             (d / "__init__.py").write_text(HopsworksApigenGriffe.MAGIC_COMMENT)
 
         filepath.write_text(content)
 
-    # Generate single .gitignore at the root
+    # Regenerate .gitignore from scratch based on directory content
+    gitignore_entries = []
+    for d in destination_root.rglob("*"):
+        if not d.is_dir():
+            continue
+        py_files = list(d.glob("*.py"))
+        if (
+            len(py_files) == 1
+            and py_files[0].name == "__init__.py"
+            and py_files[0].read_text().startswith(HopsworksApigenGriffe.MAGIC_COMMENT)
+        ):
+            gitignore_entries.append(f"/{d.relative_to(destination_root)}")
+
+    gitignore_path = destination_root / ".gitignore"
     if gitignore_entries:
-        gitignore_path = destination_root / ".gitignore"
-        if gitignore_path.exists():
-            gitignore_content = gitignore_path.read_text()
-        else:
-            gitignore_content = "# Ignore generated alias files\n"
+        gitignore_content = "# Ignore generated alias files\n"
         gitignore_content += "".join(str(x) + "\n" for x in sorted(gitignore_entries))
         gitignore_path.write_text(gitignore_content)
+    elif gitignore_path.exists():
+        gitignore_path.unlink()
 
     return managed
 
