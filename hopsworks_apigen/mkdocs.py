@@ -173,7 +173,7 @@ class HopsworksApigenMkDocs(BasePlugin[PluginConfig]):
         """Compute the docs file path for a module."""
         parts = module_path.split(".")
         docpath = f"{self.config.api_root_uri}/{'/'.join(parts)}"
-        if module_path in self.root_modules:
+        if any(mp.startswith(module_path) and mp != module_path for mp in self.objects_by_module):
             return f"{docpath}/index.md"
         return f"{docpath}.md"
 
